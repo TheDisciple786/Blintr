@@ -1,0 +1,156 @@
+.header {
+  display: flex;
+  align-items: center;
+  padding: 1rem 2rem;
+  position: relative;
+  justify-content: space-between;
+}
+
+.header-logo {
+  margin-right: 2rem;
+}
+
+.header-nav {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-left, .nav-right {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.nav-button {
+  padding: 0.4rem 1.2rem;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  margin: 0 0.3rem;
+}
+
+.nav-button a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.nav-button.login {
+  background-color: transparent;
+  border: 2px solid #5D2906;
+  color: #5D2906;
+}
+
+.nav-button.login:hover {
+  background-color: rgba(93, 41, 6, 0.1);
+  transform: translateY(-2px);
+}
+
+.nav-button.signup {
+  background-color: #3E1A04;
+  color: white;
+  box-shadow: 0 2px 4px rgba(62, 26, 4, 0.3);
+}
+
+.nav-button.signup:hover {
+  background-color: #2B1202;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(62, 26, 4, 0.4);
+}
+
+.nav-right {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.nav-left a {
+  text-decoration: none;
+  color: #333;
+}
+
+.nav-left a:hover {
+  color: #1a1a1a;
+  transition: color 0.3s ease;
+}
+
+.hamburger {
+  display: none;
+  flex-direction: column;
+  cursor: pointer;
+  padding: 10px;
+  border: none;
+  background: none;
+  margin-left: auto;
+}
+
+.hamburger span {
+  width: 25px;
+  height: 3px;
+  background-color: #333;
+  margin: 2px 0;
+  transition: all 0.3s ease;
+}
+
+/* Responsive styles */
+@media screen and (max-width: 768px) {
+  .hamburger {
+    display: flex;
+  }
+
+  .header-nav {
+    display: none;
+    position: absolute;
+    top: 70px;
+    left: 0;
+    right: 0;
+    background-color: white;
+    flex-direction: column;
+    padding: 1rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    z-index: 1000;
+  }
+
+  .header-nav.active {
+    display: flex;
+  }
+
+  .nav-left, .nav-right {
+    flex-direction: column;
+    width: 100%;
+    gap: 1rem;
+  }
+
+  .nav-left li, .nav-right li {
+    width: 100%;
+    text-align: center;
+  }
+
+  .nav-button {
+    width: 120px;
+    padding: 0.5rem 0;
+    text-align: center;
+  }
+
+  .header {
+    flex-wrap: wrap;
+  }
+
+  .header-logo {
+    margin-right: 0;
+  }
+
+  .nav-right {
+    margin-top: 1rem;
+    justify-content: center;
+  }
+}
+
+
