@@ -23,10 +23,10 @@ function Footer() {
         <div className="footer-section">
           <h3>Connect</h3>
           <div className="social-links">
-            <a href="#" aria-label="Facebook"><i className="fab fa-facebook"></i></a>
-            <a href="#" aria-label="Twitter"><i className="fab fa-twitter"></i></a>
-            <a href="#" aria-label="Instagram"><i className="fab fa-instagram"></i></a>
-            <a href="#" aria-label="LinkedIn"><i className="fab fa-linkedin"></i></a>
+            <a href="https://facebook.com/blintr" aria-label="Facebook"><i className="fab fa-facebook"></i></a>
+            <a href="https://twitter.com/blintr" aria-label="Twitter"><i className="fab fa-twitter"></i></a>
+            <a href="https://instagram.com/blintr" aria-label="Instagram"><i className="fab fa-instagram"></i></a>
+            <a href="https://linkedin.com/company/blintr" aria-label="LinkedIn"><i className="fab fa-linkedin"></i></a>
           </div>
         </div>
       </div>
