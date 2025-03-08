@@ -1,10 +1,12 @@
 import React from 'react';
 import Footer from '../Footer/Footer';
+import Header from '../Header/Header';
 import './home.css';
 
 function Home() {
     return (
         <div>
+        <Header/>
         <div className="home-container">
             <section className="hero">
                 <h1>Connect Before You See</h1>

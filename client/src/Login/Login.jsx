@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import Header from '../Header/Header';
 import './login.css';
 
 const Login = () => {
@@ -22,6 +23,8 @@ const Login = () => {
     };
 
     return (
+        <div>
+        <Header />
         <div className="auth-login-wrapper">
             <div className="auth-login-box">
                 <h1 className="auth-login-title">Welcome Back</h1>
@@ -48,15 +51,18 @@ const Login = () => {
                             required
                         />
                     </div>
-                    <button type="submit" className="auth-login-button">Log In</button>
+                    <button type="submit" className="auth-login-button">
+                        <Link to="/main" style={{ textDecoration: 'none', color: 'inherit' }}>Log In</Link>
+                    </button>
                 </form>
                 <div className="auth-login-links">
                     <a href="#forgot-password" className="auth-login-forgot">Forgot Password?</a>
                     <p className="auth-login-signup">
-                        Don't have an account? <a><Link to="/signup">Sign Up</Link></a>
+                        Don't have an account? <Link to="/signup" style={{ textDecoration: 'none', color: '#8B4513' }}>Sign Up</Link>
                     </p>
                 </div>
             </div>
+        </div>
         </div>
     );
 }

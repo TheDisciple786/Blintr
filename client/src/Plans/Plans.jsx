@@ -1,4 +1,5 @@
 import React from 'react';
+import Header from '../Header/Header';
 import './plans.css';
 
 const Plans = () => {
@@ -43,6 +44,8 @@ const Plans = () => {
   ];
 
   return (
+    <div>
+    <Header />
     <div className="plans-container">
       <div className="plans-header">
         <h1>Choose Your Plan</h1>
@@ -78,6 +81,7 @@ const Plans = () => {
           </div>
         ))}
       </div>
+    </div>
     </div>
   );
 }

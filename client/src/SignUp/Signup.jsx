@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Header from '../Header/Header';
 import './signup.css';
 
 function Signup() {
@@ -24,6 +25,8 @@ function Signup() {
     };
 
     return (
+        <div>
+        <Header />
         <div className="signup-container">
             <div className="signup-box">
                 <h2>Create Account</h2>
@@ -76,6 +79,7 @@ function Signup() {
                     Already have an account? <a href="/login">Login here</a>
                 </p>
             </div>
+        </div>
         </div>
     );
 }

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Header from '../Header/Header';
 import './contactus.css';
 
 function ContactUs() {
@@ -23,6 +24,8 @@ function ContactUs() {
     };
 
     return (
+        <div>
+        <Header />
         <div className="contact-container">
             <div className="contact-hero">
                 <h1>Get in Touch</h1>
@@ -105,6 +108,7 @@ function ContactUs() {
                     </form>
                 </div>
             </div>
+        </div>
         </div>
     );
 }

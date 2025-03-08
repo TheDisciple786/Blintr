@@ -1,5 +1,6 @@
 import React from 'react';
 import { FaCamera, FaExclamationTriangle, FaHeart, FaLock, FaMapMarkerAlt, FaUserShield } from 'react-icons/fa';
+import Header from '../Header/Header';
 import './safety.css';
 
 const Safety = () => {
@@ -48,6 +49,8 @@ const Safety = () => {
     ];
 
     return (
+        <div>
+        <Header />
         <div className="safety-container">
             <div className="safety-header">
                 <h1>Your Safety is Our Priority</h1>
@@ -88,6 +91,7 @@ const Safety = () => {
                     <button className="report-button">Report a Concern</button>
                 </div>
             </div>
+        </div>
         </div>
     );
 }
