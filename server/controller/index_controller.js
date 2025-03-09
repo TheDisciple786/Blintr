@@ -95,9 +95,15 @@ async function HandleUserLogin(req, res) {
         // Generate JWT token
         const token = jwt.sign({ userId: user._id }, "your_secret_key", { expiresIn: "1h" });
 
-        res.status(200).json({ message: "Login successful!", token, userId: user._id });
+        // Make sure to send the user ID in the response
+        res.status(200).json({
+            message: "Login successful!",
+            token,
+            userId: user._id
+        });
 
     } catch (err) {
+        console.error("Login error:", err);
         res.status(500).json({ message: "An error occurred. Please try again." });
     }
 }

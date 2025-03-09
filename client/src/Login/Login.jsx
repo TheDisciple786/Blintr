@@ -31,6 +31,8 @@ const Login = () => {
             const data = await response.json();
             if (response.ok) {
                 alert("Login Successful!");
+                localStorage.setItem('token', data.token); // Store the token
+                localStorage.setItem('userId', data.userId); // Store the userId
                 navigate('/main'); // Redirect to main page
             } else {
                 setError(data.message || "Login failed");
@@ -52,7 +54,7 @@ const Login = () => {
                             type="text"
                             name="username"
                             placeholder="Username"
-                            value={formData.email}
+                            value={formData.username || ''}
                             onChange={handleChange}
                             className="auth-login-input"
                             required
@@ -63,14 +65,14 @@ const Login = () => {
                             type="password"
                             name="password"
                             placeholder="Password"
-                            value={formData.password}
+                            value={formData.password || ''}
                             onChange={handleChange}
                             className="auth-login-input"
                             required
                         />
                     </div>
                     <button type="submit" className="auth-login-button">
-                        <Link to="/main" style={{ textDecoration: 'none', color: 'inherit' }}>Log In</Link>
+                        Log In
                     </button>
                 </form>
                 <div className="auth-login-links">
