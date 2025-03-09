@@ -62,10 +62,11 @@ h2::after {
     margin-bottom: 1.8rem;
     position: relative;
     display: flex;
+    flex-direction: column; /* Changed to column for better alignment */
     justify-content: center;
 }
 
-input {
+input, select, textarea {
     width: 100%;
     padding: 15px;
     border: 2px solid rgba(139, 69, 19, 0.2);
@@ -74,6 +75,7 @@ input {
     transition: all 0.3s ease;
     background: rgba(255, 255, 255, 0.9);
     outline: none;
+    margin-top: 0.5rem; /* Added margin for better spacing */
 }
 
 input:focus {

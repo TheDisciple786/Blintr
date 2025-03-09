@@ -1,5 +1,6 @@
 const User = require('../models/userModel');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 // Create and Save a new User
 async function HandleCreateNewUser(req, res) {
@@ -58,4 +59,47 @@ async function HandleCreateNewUser(req, res) {
     }
 }
 
-module.exports = { HandleCreateNewUser };
+async function HandleGetUsers(req,res)
+{
+    try {
+        const users = await User.find();
+        res.status(200).send(users);
+    } catch (err) {
+        res.status(500).send({
+            message: err.message || "Some error occurred while retrieving users."
+        });
+    }
+}
+
+async function HandleUserLogin(req, res) {
+    const { username, password } = req.body;
+
+    // Validate inputs
+    if (!username || !password) {
+        return res.status(400).json({ message: "Username and password are required." });
+    }
+
+    try {
+        // Find user by username
+        const user = await User.findOne({ username });
+        if (!user) {
+            return res.status(400).json({ message: "User not found." });
+        }
+
+        // Compare passwords
+        const isMatch = await bcrypt.compare(password, user.passwordHash);
+        if (!isMatch) {
+            return res.status(400).json({ message: "Invalid credentials." });
+        }
+
+        // Generate JWT token
+        const token = jwt.sign({ userId: user._id }, "your_secret_key", { expiresIn: "1h" });
+
+        res.status(200).json({ message: "Login successful!", token, userId: user._id });
+
+    } catch (err) {
+        res.status(500).json({ message: "An error occurred. Please try again." });
+    }
+}
+
+module.exports = { HandleCreateNewUser, HandleGetUsers, HandleUserLogin };

@@ -1,25 +1,43 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Header from '../Header/Header';
 import './login.css';
 
 const Login = () => {
     const [formData, setFormData] = useState({
-        email: '',
+        username: '',
         password: ''
     });
+    const [error, setError] = useState('');
+    const navigate = useNavigate();
 
     const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
+        const { name, value } = e.target;
+        setFormData(prevState => ({
+            ...prevState,
+            [name]: value
+        }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Handle login logic here
-        console.log('Login attempt:', formData);
+        try {
+            const response = await fetch('http://localhost:8000/api/users/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                alert("Login Successful!");
+                navigate('/main'); // Redirect to main page
+            } else {
+                setError(data.message || "Login failed");
+            }
+        } catch (err) {
+            setError("An error occurred. Please try again.");
+        }
     };
 
     return (
@@ -31,9 +49,9 @@ const Login = () => {
                 <form onSubmit={handleSubmit} className="auth-login-form">
                     <div className="auth-login-input-group">
                         <input
-                            type="email"
-                            name="email"
-                            placeholder="Email"
+                            type="text"
+                            name="username"
+                            placeholder="Username"
                             value={formData.email}
                             onChange={handleChange}
                             className="auth-login-input"
