@@ -7,7 +7,9 @@ import Plans from './Plans/Plans';
 import Safety from './Safety/Safety';
 import Signup from './SignUp/Signup';
 import Mainpage from './mainpage/Mainpage';
-// Import other page components
+import MatchesPage from './pages/MatchesPage';
+import MessagesPage from './pages/MessagesPage';
+import SettingsPage from './pages/SettingsPage';
 
 function App() {
   return (
@@ -20,10 +22,12 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/main" element={<Mainpage />} />
-        {/* Add other routes as needed */}
+        <Route path="/matches" element={<MatchesPage />} />
+        <Route path="/messages" element={<MessagesPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Routes>
     </Router>
   );
 }
 
-export default App; 
+export default App;

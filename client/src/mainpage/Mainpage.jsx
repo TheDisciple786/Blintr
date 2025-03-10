@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { FaBell, FaComments, FaHeart, FaSearch, FaSignOutAlt, FaUserCog } from 'react-icons/fa';
+import { FaComments, FaHeart, FaHome, FaSignOutAlt, FaUserCog } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import './mainpage.css';
 
 function Mainpage() {
-    const [activeTab, setActiveTab] = useState('discover');
+    const [activeTab, setActiveTab] = useState('home');
     const [recentMatches, setRecentMatches] = useState([]);
     const [conversations, setConversations] = useState([]);
     const [recommendedMatches, setRecommendedMatches] = useState([]);
@@ -124,7 +124,8 @@ function Mainpage() {
                     id: user._id,
                     name: user.username,
                     compatibility: calculateCompatibility(userData, user) + '%',
-                    interests: user.interests || []
+                    interests: user.interests || [],
+                    bio: user.bio || 'No bio available'
                 }));
 
                 setRecentMatches(processedMatches);
@@ -138,6 +139,7 @@ function Mainpage() {
         };
 
         fetchData();
+        // eslint-disable-next-line
     }, [navigate]);
 
     const messagesToReveal = (count) => (5 - count > 0 ? 5 - count : 0);
@@ -170,7 +172,7 @@ function Mainpage() {
     const handleLogout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('userId');
-        navigate('/login');
+        navigate('/');
     };
 
     if (isLoading) {
@@ -181,7 +183,7 @@ function Mainpage() {
         <div className="mainpage-container">
             <aside className="main-sidebar">
                 <div className="sidebar-header">
-                    <Link to="/" className="logo">Blintr</Link>
+                    <Link to="/main" className="logo">Blintr</Link>
                 </div>
                 
                 <div className="user-preview">
@@ -198,29 +200,31 @@ function Mainpage() {
                 </div>
                 
                 <nav className="main-nav">
-                    <button 
-                        className={`nav-item ${activeTab === 'discover' ? 'active' : ''}`} 
-                        onClick={() => setActiveTab('discover')}>
-                        <FaSearch /> Discover
-                    </button>
-                    <button 
+                    <Link 
+                        to="/main"
+                        className={`nav-item ${activeTab === 'home' ? 'active' : ''}`} 
+                        onClick={() => setActiveTab('home')}>
+                        <FaHome /> Home
+                    </Link>
+                    <Link 
+                        to="/matches"
                         className={`nav-item ${activeTab === 'matches' ? 'active' : ''}`} 
                         onClick={() => setActiveTab('matches')}>
                         <FaHeart /> Matches
                         <span className="badge">{recentMatches.length}</span>
-                    </button>
-                    <button 
+                    </Link>
+                    <Link 
+                        to="/messages"
                         className={`nav-item ${activeTab === 'messages' ? 'active' : ''}`} 
                         onClick={() => setActiveTab('messages')}>
                         <FaComments /> Messages
                         <span className="badge">{conversations.reduce((sum, conv) => sum + conv.unread, 0)}</span>
-                    </button>
-                    <button className="nav-item">
-                        <FaBell /> Notifications
-                    </button>
-                    <button className="nav-item">
+                    </Link>
+                    <Link
+                        to="/settings"
+                        className="nav-item">
                         <FaUserCog /> Settings
-                    </button>
+                    </Link>
                 </nav>
                 
                 <div className="sidebar-footer">
@@ -339,6 +343,7 @@ function Mainpage() {
                                             </div>
                                             <div className="recommended-info">
                                                 <h3>{match.name}</h3>
+                                                <p>{match.bio}</p>
                                                 <div className="recommended-interests">
                                                     {match.interests.map((interest, i) => (
                                                         <span key={i} className="interest-tag small">{interest}</span>

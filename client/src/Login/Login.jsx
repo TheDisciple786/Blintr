@@ -48,6 +48,7 @@ const Login = () => {
         <div className="auth-login-wrapper">
             <div className="auth-login-box">
                 <h1 className="auth-login-title">Welcome Back</h1>
+                {error && <div className="auth-error-message">{error}</div>}
                 <form onSubmit={handleSubmit} className="auth-login-form">
                     <div className="auth-login-input-group">
                         <input

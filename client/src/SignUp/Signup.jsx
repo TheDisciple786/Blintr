@@ -17,7 +17,7 @@ function Signup() {
         dob: '',
         location: ''
     });
-
+    const [photoPreview, setPhotoPreview] = useState(null);
     const [step, setStep] = useState(1);
     const [error, setError] = useState('');
     const navigate = useNavigate();
@@ -28,6 +28,65 @@ function Signup() {
             ...prevState,
             [name]: value
         }));
+    };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Check if file is an image
+        if (!file.type.match('image.*')) {
+            setError('Please select an image file (png, jpg, jpeg, etc.)');
+            return;
+        }
+
+        // Check if file is too large (max 5MB for raw file)
+        if (file.size > 5 * 1024 * 1024) {
+            setError('Image file is too large. Please select an image under 5MB.');
+            return;
+        }
+
+        // Create an image element to compress
+        const img = new Image();
+        img.onload = () => {
+            // Create a canvas to resize and compress the image
+            const canvas = document.createElement('canvas');
+            
+            // Calculate new dimensions - max 800px width/height while maintaining aspect ratio
+            let width = img.width;
+            let height = img.height;
+            if (width > height) {
+                if (width > 800) {
+                    height *= 800 / width;
+                    width = 800;
+                }
+            } else {
+                if (height > 800) {
+                    width *= 800 / height;
+                    height = 800;
+                }
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            
+            // Draw resized image on canvas
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // Convert to base64 with compression
+            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7); // 70% quality JPEG
+            
+            setFormData(prevState => ({
+                ...prevState,
+                profile_photo: compressedBase64
+            }));
+            setPhotoPreview(compressedBase64);
+        };
+        
+        // Load the image
+        img.onerror = () => setError('Error processing image');
+        img.src = URL.createObjectURL(file);
     };
 
     const handleNextStep = (e) => {
@@ -62,7 +121,6 @@ function Signup() {
         } catch (err) {
             setError("An error occurred. Please try again.");
         }
-        console.log('Form submitted:', formData);
     };
 
     return (
@@ -71,6 +129,7 @@ function Signup() {
         <div className="signup-container">
             <div className="signup-box">
                 <h2>Create Account</h2>
+                {error && <div className="error-message">{error}</div>}
                 {step === 1 && (
                     <form onSubmit={handleNextStep}>
                         <div className="form-group">
@@ -206,15 +265,25 @@ function Signup() {
                             />
                         </div>
                         <div className="form-group">
-                            <label htmlFor="profile_photo">Profile Photo URL</label>
+                            <label htmlFor="profile_photo">Profile Photo</label>
                             <input
-                                type="text"
-                                name="profile_photo"
-                                placeholder="Profile Photo URL"
-                                value={formData.profile_photo}
-                                onChange={handleChange}
+                                type="file"
+                                id="profile_photo"
+                                name="profile_photo_upload"
+                                accept="image/*"
+                                onChange={handleFileChange}
+                                className="file-input"
                                 required
                             />
+                            {photoPreview && (
+                                <div className="photo-preview">
+                                    <img 
+                                        src={photoPreview} 
+                                        alt="Profile Preview" 
+                                        className="preview-image"
+                                    />
+                                </div>
+                            )}
                         </div>
                         <button type="submit" className="signup-button">
                             Sign Up
