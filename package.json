@@ -1,0 +1,22 @@
+{
+  "name": "blintr",
+  "version": "1.0.0",
+  "description": "A personality-first dating application",
+  "main": "start.js",
+  "scripts": {
+    "start": "node start.js",
+    "server": "nodemon server/index.js",
+    "client": "cd client && npm start",
+    "update-port": "node update-client-port.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "mongoose": "^6.2.7",
+    "jsonwebtoken": "^8.5.1",
+    "bcryptjs": "^2.4.3"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  }
+}

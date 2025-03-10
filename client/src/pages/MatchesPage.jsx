@@ -7,6 +7,8 @@ import './pages.css'; // We'll create this for additional styles
 function MatchesPage() {
     const [activeTab, setActiveTab] = useState('matches');
     const [recentMatches, setRecentMatches] = useState([]);
+    //eslint-disable-next-line
+    const [conversations, setConversations] = useState([]);
     const [userData, setUserData] = useState({});
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
@@ -24,40 +26,67 @@ function MatchesPage() {
                 }
 
                 const headers = { 'Authorization': `Bearer ${token}` };
-
-                // Fetch user data
-                try {
-                    const userRes = await fetch(`http://localhost:8000/api/users/${userId}`, { headers });
-                    if (userRes.ok) {
-                        const userData = await userRes.json();
-                        setUserData(userData);
-                    } else {
-                        console.error("Failed to fetch user data");
-                    }
-                } catch (error) {
-                    console.error("Error fetching user data:", error);
+                
+                // Get the server URL from environment or default to localhost
+                const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+                
+                // Fetch user data, matches, and messages in parallel for efficiency
+                const [userRes, matchRes, msgRes] = await Promise.all([
+                    fetch(`${apiUrl}/api/users/${userId}`, { headers }),
+                    fetch(`${apiUrl}/api/matches`, { headers }),
+                    fetch(`${apiUrl}/api/messages`, { headers })
+                ]);
+                
+                // Process user data
+                if (userRes.ok) {
+                    const userData = await userRes.json();
+                    setUserData(userData);
                 }
-
-                // Fetch matches
-                const matchRes = await fetch('http://localhost:8000/api/matches', { headers });
+                
+                // Process matches and messages
                 const matchData = await matchRes.json();
-
-                // Process match data
-                const processedMatches = matchData.map(match => {
-                    // Find the other user (not the current user)
-                    const otherUser = match.user1._id === userId ? match.user2 : match.user1;
-                    
-                    return {
-                        id: match._id,
-                        name: otherUser.username,
-                        bio: otherUser.bio,
-                        interests: otherUser.interests || [],
-                        messageCount: 0,
-                        photosRevealed: match.photos_unlocked
-                    };
+                const msgData = await msgRes.json();
+                
+                console.log("Matches received in MatchesPage:", matchData.length);
+                
+                // Create a map to count messages per match
+                const messageCountByMatch = {};
+                msgData.forEach(msg => {
+                    if (!messageCountByMatch[msg.match_id]) {
+                        messageCountByMatch[msg.match_id] = 0;
+                    }
+                    messageCountByMatch[msg.match_id]++;
                 });
-
+                
+                // Process match data with correct message counts - only include valid matches
+                const processedMatches = matchData
+                    .filter(match => {
+                        // Verify this is a valid match with both users
+                        return match.user1 && match.user2;
+                    })
+                    .map(match => {
+                        // Find the other user (not the current user)
+                        const otherUser = match.user1._id === userId ? match.user2 : match.user1;
+                        
+                        // Get message count for this match
+                        const messageCount = messageCountByMatch[match._id] || 0;
+                        
+                        return {
+                            id: match._id,
+                            name: otherUser.username,
+                            bio: otherUser.bio,
+                            interests: otherUser.interests || [],
+                            messageCount: messageCount,
+                            photosRevealed: match.photos_unlocked,
+                            otherUser: otherUser // Store the other user object
+                        };
+                    });
+                
+                console.log("Processed matches in MatchesPage:", processedMatches.length);
                 setRecentMatches(processedMatches);
+                
+                // ...existing code for processing conversations if needed...
+                
             } catch (error) {
                 console.error("Error fetching data:", error);
             } finally {
@@ -68,7 +97,11 @@ function MatchesPage() {
         fetchData();
     }, [navigate]);
 
-    const messagesToReveal = (count) => (5 - count > 0 ? 5 - count : 0);
+    const messagesToReveal = (count) => {
+        // Calculate how many messages are left until photos reveal (5 message threshold)
+        const remaining = 5 - count;
+        return remaining > 0 ? remaining : 0;
+    };
     
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -173,10 +206,20 @@ function MatchesPage() {
                             {recentMatches.length > 0 ? (
                                 recentMatches.map(match => (
                                     <div key={match.id} className="match-card">
-                                        <div className="match-photo-blur">
-                                            <div className="match-messages-left">
-                                                <span>{messagesToReveal(match.messageCount)} messages to reveal</span>
-                                            </div>
+                                        <div className={`match-photo-blur ${match.photosRevealed ? "photos-revealed" : ""}`}>
+                                            {match.photosRevealed ? (
+                                                <img 
+                                                    src={match.otherUser?.profile_photo || '/default-avatar.png'}
+                                                    alt={match.name}
+                                                    className="revealed-photo"
+                                                />
+                                            ) : (
+                                                <div className="match-messages-left">
+                                                    <span>
+                                                        {messagesToReveal(match.messageCount)} messages to reveal
+                                                    </span>
+                                                </div>
+                                            )}
                                         </div>
                                         <div className="match-info">
                                             <h3>{match.name}</h3>
@@ -186,7 +229,12 @@ function MatchesPage() {
                                                     <span key={i} className="interest-tag">{interest}</span>
                                                 ))}
                                             </div>
-                                            <button className="message-button">Message</button>
+                                            <button 
+                                                className="message-button" 
+                                                onClick={() => navigate(`/chat/${match.id}`)}
+                                            >
+                                                Message
+                                            </button>
                                         </div>
                                     </div>
                                 ))

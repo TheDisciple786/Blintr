@@ -105,7 +105,9 @@ function Signup() {
             interests: formData.interests.split(',').map(interest => interest.trim())
         };
         try {
-            const response = await fetch('http://localhost:8000/api/new_user', {
+            const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+            
+            const response = await fetch(`${apiUrl}/api/new_user`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formattedData)
@@ -119,7 +121,8 @@ function Signup() {
                 setError(data.message || "Signup failed");
             }
         } catch (err) {
-            setError("An error occurred. Please try again.");
+            console.error("Registration error:", err);
+            setError("Network error. Please check your internet connection or server availability.");
         }
     };
 

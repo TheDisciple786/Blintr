@@ -280,7 +280,8 @@ body, html {
   overflow: hidden;
 }
 
-.match-photo-blur::before {
+/* Only show these effects on non-revealed photos */
+.match-photo-blur:not(.photos-revealed)::before {
   content: '';
   position: absolute;
   top: 0;
@@ -292,12 +293,26 @@ body, html {
   opacity: 0.7;
 }
 
-.match-photo-blur::after {
+.match-photo-blur:not(.photos-revealed)::after {
   content: '?';
   position: absolute;
   font-size: 80px;
   color: rgba(255, 255, 255, 0.3);
   font-weight: bold;
+}
+
+/* Revealed photo styles */
+.match-photo-blur.photos-revealed {
+  position: relative;
+  overflow: hidden;
+  background: none; /* Remove gradient background when photo is revealed */
+}
+
+.revealed-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .match-messages-left {
@@ -364,10 +379,20 @@ body, html {
   cursor: pointer;
   transition: background-color 0.2s ease;
   margin-top: auto;
+  text-align: center;
+  text-decoration: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .message-button:hover {
   background-color: #6b350e;
+}
+
+/* Remove any link styling for child elements */
+.message-button * {
+  text-decoration: none;
 }
 
 /* Two Column Layout */
@@ -419,6 +444,7 @@ body, html {
   justify-content: center;
 }
 
+/* Only show question mark on blurred avatars */
 .convo-avatar.blurred::after {
   content: '?';
   position: absolute;
@@ -427,11 +453,11 @@ body, html {
   font-weight: bold;
 }
 
-.reveal-counter {
-  color: white;
-  font-size: 1rem;
-  font-weight: bold;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .convo-content {
@@ -505,16 +531,8 @@ body, html {
   padding: 1rem;
 }
 
-.compatibility-badge {
-  background-color: rgba(139, 69, 19, 0.9);
-  color: white;
-  padding: 0.3rem 0.8rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 500;
-}
-
-.recommended-photo-blur::after {
+/* Only show question mark if photos are not revealed */
+.recommended-photo-blur:not(.photos-revealed)::after {
   content: '?';
   position: absolute;
   top: 50%;
@@ -523,6 +541,20 @@ body, html {
   font-size: 40px;
   color: rgba(255, 255, 255, 0.3);
   font-weight: bold;
+}
+
+/* Additional styling for revealed recommendation photos */
+.recommended-photo-blur.photos-revealed {
+  background: none; /* Remove gradient background */
+}
+
+.compatibility-badge {
+  background-color: rgba(139, 69, 19, 0.9);
+  color: white;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
 }
 
 .recommended-info {

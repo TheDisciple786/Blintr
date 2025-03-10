@@ -8,6 +8,7 @@ function Mainpage() {
     const [recentMatches, setRecentMatches] = useState([]);
     const [conversations, setConversations] = useState([]);
     const [recommendedMatches, setRecommendedMatches] = useState([]);
+    const [skippedRecommendations, setSkippedRecommendations] = useState(new Set());
     const [userData, setUserData] = useState({});
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
@@ -25,14 +26,18 @@ function Mainpage() {
                 }
 
                 const headers = { 'Authorization': `Bearer ${token}` };
+                
+                // Get the server URL from environment or default to localhost
+                const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
-                // Fetch user data first
+                // Fetch user data first to ensure it's available for filtering
+                let currentUserData = {};
                 try {
-                    const userRes = await fetch(`http://localhost:8000/api/users/${userId}`, { headers });
+                    const userRes = await fetch(`${apiUrl}/api/users/${userId}`, { headers });
                     if (userRes.ok) {
-                        const userData = await userRes.json();
-                        console.log("User data fetched:", userData); // Add logging to debug
-                        setUserData(userData);
+                        currentUserData = await userRes.json();
+                        console.log("User data fetched:", currentUserData);
+                        setUserData(currentUserData);
                     } else {
                         console.error("Failed to fetch user data");
                     }
@@ -42,40 +47,76 @@ function Mainpage() {
 
                 // Fetch matches, messages, and recommendations
                 const [matchRes, msgRes, recRes] = await Promise.all([
-                    fetch('http://localhost:8000/api/matches', { headers }),
-                    fetch('http://localhost:8000/api/messages', { headers }),
-                    fetch('http://localhost:8000/api/recommendations', { headers })
+                    fetch(`${apiUrl}/api/matches`, { headers }),
+                    fetch(`${apiUrl}/api/messages`, { headers }),
+                    fetch(`${apiUrl}/api/recommendations`, { headers })
                 ]);
 
                 const matchData = await matchRes.json();
                 const msgData = await msgRes.json();
                 const recData = await recRes.json();
 
-                // Process match data to create proper UI objects
-                const processedMatches = matchData.map(match => {
-                    // Find the other user (not the current user)
-                    const otherUser = match.user1._id === userId ? match.user2 : match.user1;
-                    
-                    return {
-                        id: match._id,
-                        name: otherUser.username,
-                        bio: otherUser.bio,
-                        interests: otherUser.interests || [],
-                        messageCount: 0, // Will be updated from messages data
-                        photosRevealed: match.photos_unlocked
-                    };
-                });
+                console.log("Recommendations received:", recData.length);
+                console.log("User preferences:", currentUserData.looking_for);
 
-                // Process message data to count messages per match
+                // Process match data to create proper UI objects - only include actual matches
+                const processedMatches = matchData
+                    .filter(match => {
+                        // Double-check that this is a valid match with both users
+                        return match.user1 && match.user2;
+                    })
+                    .map(match => {
+                        // Find the other user (not the current user)
+                        const otherUser = match.user1._id === userId ? match.user2 : match.user1;
+                        
+                        return {
+                            id: match._id,
+                            name: otherUser.username,
+                            bio: otherUser.bio,
+                            interests: otherUser.interests || [],
+                            messageCount: 0, // Will be updated from messages data
+                            photosRevealed: match.photos_unlocked,
+                            otherUser: otherUser // Store the other user object to access the profile photo
+                        };
+                    });
+
+                console.log("Processed matches:", processedMatches.length);
+
+                // Create a set of user IDs that are already matched with the current user
+                const matchedUserIds = new Set(matchData.map(match => {
+                    // Get the ID of the other user in each match
+                    return match.user1._id === userId ? match.user2._id : match.user1._id;
+                }));
+
+                console.log("Already matched user IDs:", [...matchedUserIds]);
+
+                // Create a set of valid match IDs
+                const validMatchIds = new Set(matchData.map(match => match._id));
+                console.log("Valid match IDs for conversations:", [...validMatchIds]);
+
+                // Process message data to count messages per match - ONLY for valid matches
                 const messagesByMatch = {};
                 const conversationData = [];
                 
                 msgData.forEach(msg => {
+                    // Skip messages that don't belong to valid matches
+                    if (!validMatchIds.has(msg.match_id)) {
+                        console.log(`Skipping message from invalid match: ${msg.match_id}`);
+                        return;
+                    }
+                    
                     // Count messages for photo reveal calculation
                     if (!messagesByMatch[msg.match_id]) {
                         messagesByMatch[msg.match_id] = 0;
                     }
                     messagesByMatch[msg.match_id]++;
+                    
+                    // Find match this message belongs to
+                    const relatedMatch = matchData.find(m => m._id === msg.match_id);
+                    if (!relatedMatch) {
+                        console.log(`Match not found for message: ${msg.match_id}`);
+                        return;
+                    }
                     
                     // Find unique conversations
                     const existingConvo = conversationData.find(c => c.matchId === msg.match_id);
@@ -91,7 +132,8 @@ function Mainpage() {
                             time: formatTimeAgo(new Date(msg.sent_at)),
                             unread: msg.receiver_id._id === userId && !msg.seen ? 1 : 0,
                             messageCount: 1,
-                            photosRevealed: false // Will be updated based on match data
+                            photosRevealed: relatedMatch.photos_unlocked,
+                            otherUser: otherUser // Store the other user object
                         });
                     } else {
                         // Update existing conversation
@@ -119,11 +161,36 @@ function Mainpage() {
                     }
                 });
 
+                // Filter recommendations to exclude:
+                // 1. Users already matched with the current user
+                // 2. Users that don't match the gender preference
+                const filteredRecData = recData.filter(rec => {
+                    // Skip users that are already matched
+                    if (matchedUserIds.has(rec._id)) {
+                        console.log(`Filtering out ${rec.username} - already matched`);
+                        return false;
+                    }
+                    
+                    // If no preference is set yet or preference is "any", show all
+                    if (!currentUserData.looking_for || currentUserData.looking_for === 'any') {
+                        console.log(`Showing ${rec.username} - user has no preference or preference is "any"`);
+                        return true;
+                    }
+                    
+                    // Otherwise, check if the recommendation matches the preference
+                    const matchesPreference = rec.gender === currentUserData.looking_for;
+                    console.log(`${rec.username} (${rec.gender}) matches preference (${currentUserData.looking_for})? ${matchesPreference}`);
+                    return matchesPreference;
+                });
+
+                console.log("Filtered recommendations count:", filteredRecData.length);
+
                 // Process recommendations to match UI needs
-                const processedRecommendations = recData.map(user => ({
+                const processedRecommendations = filteredRecData.map(user => ({
                     id: user._id,
                     name: user.username,
-                    compatibility: calculateCompatibility(userData, user) + '%',
+                    gender: user.gender, // Store gender for debugging
+                    compatibility: calculateCompatibility(currentUserData, user) + '%',
                     interests: user.interests || [],
                     bio: user.bio || 'No bio available'
                 }));
@@ -131,6 +198,10 @@ function Mainpage() {
                 setRecentMatches(processedMatches);
                 setConversations(conversationData);
                 setRecommendedMatches(processedRecommendations);
+                
+                // Log the filtered recommendations for debugging
+                console.log("User's preference:", currentUserData.looking_for);
+                console.log("Filtered recommendations:", processedRecommendations);
             } catch (error) {
                 console.error("Error fetching data:", error);
             } finally {
@@ -174,6 +245,63 @@ function Mainpage() {
         localStorage.removeItem('userId');
         navigate('/');
     };
+
+    // Handler for skipping a recommendation
+    const handleSkip = (matchId) => {
+        setSkippedRecommendations(prev => new Set(prev).add(matchId));
+    };
+
+    // Handler for connecting with a recommendation
+    const handleConnect = async (match) => {
+        try {
+            const token = localStorage.getItem('token');
+            const userId = localStorage.getItem('userId');
+            
+            if (!token || !userId) {
+                navigate('/login');
+                return;
+            }
+
+            const headers = { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+            
+            // Get the server URL from environment or default to localhost
+            const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+            
+            console.log("Creating match between", userId, "and", match.id);
+
+            // Create a new match with this person
+            const response = await fetch(`${apiUrl}/api/matches/create`, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                    userId: userId,
+                    matchedUserId: match.id
+                })
+            });
+
+            const data = await response.json();
+            
+            if (response.ok) {
+                console.log("Match created successfully:", data);
+                // Navigate to chat with the new match
+                navigate(`/chat/${data.matchId}`);
+            } else {
+                console.error("Failed to connect with recommendation:", data.message);
+                alert("Failed to connect: " + (data.message || "Unknown error"));
+            }
+        } catch (error) {
+            console.error("Error connecting with recommendation:", error);
+            alert("Error connecting with recommendation. Please try again.");
+        }
+    };
+
+    // Filter out skipped recommendations from the displayed list
+    const filteredRecommendations = recommendedMatches.filter(
+        match => !skippedRecommendations.has(match.id)
+    );
 
     if (isLoading) {
         return <div className="loading-screen">Loading...</div>;
@@ -267,10 +395,18 @@ function Mainpage() {
                             {recentMatches.length > 0 ? (
                                 recentMatches.map(match => (
                                     <div key={match.id} className="match-card">
-                                        <div className="match-photo-blur">
-                                            <div className="match-messages-left">
-                                                <span>{messagesToReveal(match.messageCount)} messages to reveal</span>
-                                            </div>
+                                        <div className={`match-photo-blur ${match.photosRevealed ? "photos-revealed" : ""}`}>
+                                            {match.photosRevealed ? (
+                                                <img 
+                                                    src={match.otherUser?.profile_photo || '/default-avatar.png'}
+                                                    alt={match.name}
+                                                    className="revealed-photo"
+                                                />
+                                            ) : (
+                                                <div className="match-messages-left">
+                                                    <span>{messagesToReveal(match.messageCount)} messages to reveal</span>
+                                                </div>
+                                            )}
                                         </div>
                                         <div className="match-info">
                                             <h3>{match.name}</h3>
@@ -280,7 +416,12 @@ function Mainpage() {
                                                     <span key={i} className="interest-tag">{interest}</span>
                                                 ))}
                                             </div>
-                                            <button className="message-button">Message</button>
+                                            <button 
+                                                className="message-button" 
+                                                onClick={() => navigate(`/chat/${match.id}`)}
+                                            >
+                                                Message
+                                            </button>
                                         </div>
                                     </div>
                                 ))
@@ -300,9 +441,20 @@ function Mainpage() {
                             <div className="conversation-list">
                                 {conversations.length > 0 ? (
                                     conversations.map(convo => (
-                                        <div key={convo.id} className="conversation-card">
+                                        <div 
+                                            key={convo.id} 
+                                            className="conversation-card"
+                                            onClick={() => navigate(`/chat/${convo.matchId}`)}
+                                            style={{ cursor: 'pointer' }}
+                                        >
                                             <div className={`convo-avatar ${convo.photosRevealed ? '' : 'blurred'}`}>
-                                                {!convo.photosRevealed && (
+                                                {convo.photosRevealed ? (
+                                                    <img 
+                                                        src={convo.otherUser?.profile_photo || '/default-avatar.png'}
+                                                        alt={convo.name}
+                                                        className="avatar-image"
+                                                    />
+                                                ) : (
                                                     <div className="reveal-counter">
                                                         {messagesToReveal(convo.messageCount)}
                                                     </div>
@@ -333,8 +485,8 @@ function Mainpage() {
                             </div>
                             
                             <div className="recommended-list">
-                                {recommendedMatches.length > 0 ? (
-                                    recommendedMatches.map(match => (
+                                {filteredRecommendations.length > 0 ? (
+                                    filteredRecommendations.map(match => (
                                         <div key={match.id} className="recommended-card">
                                             <div className="recommended-photo-blur">
                                                 <div className="compatibility-badge">
@@ -345,19 +497,29 @@ function Mainpage() {
                                                 <h3>{match.name}</h3>
                                                 <p>{match.bio}</p>
                                                 <div className="recommended-interests">
-                                                    {match.interests.map((interest, i) => (
+                                                    {match.interests && match.interests.map((interest, i) => (
                                                         <span key={i} className="interest-tag small">{interest}</span>
                                                     ))}
                                                 </div>
                                                 <div className="action-buttons">
-                                                    <button className="skip-button">Skip</button>
-                                                    <button className="connect-button">Connect</button>
+                                                    <button 
+                                                        className="skip-button"
+                                                        onClick={() => handleSkip(match.id)}
+                                                    >
+                                                        Skip
+                                                    </button>
+                                                    <button 
+                                                        className="connect-button"
+                                                        onClick={() => handleConnect(match)}
+                                                    >
+                                                        Connect
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
                                     ))
                                 ) : (
-                                    <p>No recommendations available right now.</p>
+                                    <p>No recommendations available right now. Try again later.</p>
                                 )}
                             </div>
                         </section>
