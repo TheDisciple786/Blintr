@@ -23,6 +23,29 @@ async function HandleCreateNewUser(req, res) {
             return res.status(400).send({ message: "User with this email already exists." });
         }
 
+        // Validate profile photo if provided - check if it's a valid base64 string
+        let processedProfilePhoto = profile_photo || "";
+        if (profile_photo) {
+            // Check if it's a valid base64 string - should start with data:image format
+            if (!profile_photo.match(/^data:image\/(jpeg|png|gif|bmp|svg\+xml);base64,/)) {
+                return res.status(400).send({ 
+                    message: "Invalid profile photo format. Must be a valid base64 image string."
+                });
+            }
+            
+            // Check base64 string size
+            const base64Data = profile_photo.split(',')[1];
+            const base64Size = Math.round((base64Data.length * 3) / 4); // Approximate size in bytes
+            if (base64Size > 10 * 1024 * 1024) { // 10MB limit
+                return res.status(400).send({ 
+                    message: "Profile photo too large. Max size is 10MB."
+                });
+            }
+            
+            // Store base64 string directly
+            processedProfilePhoto = profile_photo;
+        }
+
         // Hash the password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
@@ -34,7 +57,7 @@ async function HandleCreateNewUser(req, res) {
             passwordHash: hashedPassword,
             bio: bio || "",
             interests: interests || [],
-            profile_photo: profile_photo || "",
+            profile_photo: processedProfilePhoto, // Store the validated base64 string
             photo_visibility: false,  // Default is false
             gender,
             looking_for,
@@ -50,9 +73,17 @@ async function HandleCreateNewUser(req, res) {
 
         // Save user to database
         const savedUser = await newUser.save();
-        res.status(201).send(savedUser);
+        
+        // Return user without the password hash for security
+        const userResponse = {
+            ...savedUser._doc,
+            passwordHash: undefined
+        };
+        
+        res.status(201).send(userResponse);
 
     } catch (err) {
+        console.error("Error creating user:", err);
         res.status(500).send({
             message: err.message || "Some error occurred while creating the User."
         });

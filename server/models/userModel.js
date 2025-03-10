@@ -6,7 +6,10 @@ const UserSchema = new mongoose.Schema({
     passwordHash: { type: String, required: true },
     bio: { type: String },
     interests: [{ type: String }],
-    profile_photo: { type: String },
+    profile_photo: { 
+        type: String,  // Will store the base64 string
+        maxlength: 10 * 1024 * 1024 // 10MB max limit for base64 string
+    },
     photo_visibility: { type: Boolean, default: false },
     gender: { type: String, enum: ['male', 'female', 'other'], required: true },
     looking_for: { type: String, enum: ['male', 'female', 'other', 'any'], required: true },
