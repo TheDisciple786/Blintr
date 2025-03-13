@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { HandleCreateNewUser, HandleGetUsers, HandleUserLogin } = require('../controller/index_controller');
 const { Match, Message, User } = require('../models/index_db'); // Import models
+const config = require('../config/config');
 
 router.post('/new_user', HandleCreateNewUser);
 
@@ -19,7 +20,7 @@ router.get('/matches', async (req, res) => {
         }
 
         // Verify token to get current user
-        const decoded = jwt.verify(token, "your_secret_key");
+        const decoded = jwt.verify(token, config.jwtSecret);
         const currentUserId = decoded.userId;
         
         // Find matches where the current user is either user1 or user2
@@ -53,7 +54,7 @@ router.get('/recommendations', async (req, res) => {
         }
         
         // Extract user ID from token
-        const decoded = jwt.verify(token, "your_secret_key");
+        const decoded = jwt.verify(token, config.jwtSecret);
         const currentUserId = decoded.userId;
         
         // Find 5 users excluding the current user
@@ -96,7 +97,7 @@ router.put('/users/:userId', async (req, res) => {
         }
 
         // Verify token
-        const decoded = jwt.verify(token, "your_secret_key");
+        const decoded = jwt.verify(token, config.jwtSecret);
         const currentUserId = decoded.userId;
         
         // Check if the user is updating their own profile
@@ -158,7 +159,7 @@ router.get('/matches/:matchId', async (req, res) => {
         }
 
         // Verify token
-        const decoded = jwt.verify(token, "your_secret_key");
+        const decoded = jwt.verify(token, config.jwtSecret);
         const currentUserId = decoded.userId;
         
         const match = await Match.findById(req.params.matchId).populate('user1 user2');
@@ -188,7 +189,7 @@ router.get('/messages/:matchId', async (req, res) => {
         }
 
         // Verify token
-        const decoded = jwt.verify(token, "your_secret_key");
+        const decoded = jwt.verify(token, config.jwtSecret);
         const currentUserId = decoded.userId;
         
         // Find match first to verify access
@@ -223,7 +224,7 @@ router.post('/messages/send', async (req, res) => {
         }
 
         // Verify token
-        const decoded = jwt.verify(token, "your_secret_key");
+        const decoded = jwt.verify(token, config.jwtSecret);
         const senderId = decoded.userId;
         
         const { match_id, receiver_id, message } = req.body;
@@ -287,7 +288,7 @@ router.post('/messages/:matchId/read', async (req, res) => {
         }
 
         // Verify token
-        const decoded = jwt.verify(token, "your_secret_key");
+        const decoded = jwt.verify(token, config.jwtSecret);
         const currentUserId = decoded.userId;
         
         const matchId = req.params.matchId;
@@ -376,7 +377,7 @@ router.post('/users/change-password', async (req, res) => {
         }
 
         // Verify token
-        const decoded = jwt.verify(token, "your_secret_key");
+        const decoded = jwt.verify(token, config.jwtSecret);
         const currentUserId = decoded.userId;
         
         // Check if user is changing their own password
