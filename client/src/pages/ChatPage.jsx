@@ -34,7 +34,7 @@ function ChatPage() {
 
                 // Fetch user data
                 try {
-                    const userRes = await fetch(`http://localhost:8000/api/users/${userId}`, { headers });
+                    const userRes = await fetch(`http://blintr-server.onrender.com/api/users/${userId}`, { headers });
                     if (userRes.ok) {
                         const userData = await userRes.json();
                         setUserData(userData);
@@ -47,7 +47,7 @@ function ChatPage() {
 
                 // Fetch match data for the current match
                 try {
-                    const matchRes = await fetch(`http://localhost:8000/api/matches/${matchId}`, { headers });
+                    const matchRes = await fetch(`http://blintr-server.onrender.com/api/matches/${matchId}`, { headers });
                     if (matchRes.ok) {
                         const match = await matchRes.json();
                         setMatchData(match);
@@ -64,14 +64,14 @@ function ChatPage() {
 
                 // Fetch messages for this match
                 try {
-                    const messagesRes = await fetch(`http://localhost:8000/api/messages/${matchId}`, { headers });
+                    const messagesRes = await fetch(`http://blintr-server.onrender.com/api/messages/${matchId}`, { headers });
                     if (messagesRes.ok) {
                         const messagesData = await messagesRes.json();
                         setMessages(messagesData);
                         
                         // Mark all unread messages as read
                         if (messagesData.some(msg => msg.receiver_id._id === userId && !msg.seen)) {
-                            await fetch(`http://localhost:8000/api/messages/${matchId}/read`, {
+                            await fetch(`http://blintr-server.onrender.com/api/messages/${matchId}/read`, {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
@@ -87,12 +87,12 @@ function ChatPage() {
                 }
 
                 // Fetch all matches for the sidebar
-                const allMatchesRes = await fetch('http://localhost:8000/api/matches', { headers });
+                const allMatchesRes = await fetch('http://blintr-server.onrender.com/api/matches', { headers });
                 const allMatchesData = await allMatchesRes.json();
                 setMatches(allMatchesData || []);
                 
                 // Fetch conversations for the sidebar
-                const msgRes = await fetch('http://localhost:8000/api/messages', { headers });
+                const msgRes = await fetch('http://blintr-server.onrender.com/api/messages', { headers });
                 const msgData = await msgRes.json();
                 setConversations(msgData || []);
                 
@@ -128,7 +128,7 @@ function ChatPage() {
         const headers = { 'Authorization': `Bearer ${token}` };
         
         try {
-            const messagesRes = await fetch(`http://localhost:8000/api/messages/${matchId}`, { headers });
+            const messagesRes = await fetch(`http://blintr-server.onrender.com/api/messages/${matchId}`, { headers });
             if (messagesRes.ok) {
                 const messagesData = await messagesRes.json();
                 
@@ -142,7 +142,7 @@ function ChatPage() {
                     );
                     
                     if (hasUnread) {
-                        await fetch(`http://localhost:8000/api/messages/${matchId}/read`, {
+                        await fetch(`http://blintr-server.onrender.com/api/messages/${matchId}/read`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -172,7 +172,7 @@ function ChatPage() {
         if (!token || !userId || !matchId || !otherUser) return;
         
         try {
-            const response = await fetch('http://localhost:8000/api/messages/send', {
+            const response = await fetch('http://blintr-server.onrender.com/api/messages/send', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

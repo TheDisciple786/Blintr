@@ -28,7 +28,7 @@ function Mainpage() {
                 const headers = { 'Authorization': `Bearer ${token}` };
                 
                 // Get the server URL from environment or default to localhost
-                const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+                const apiUrl = process.env.REACT_APP_API_URL || 'http://blintr-server.onrender.com';
 
                 // Fetch user data first to ensure it's available for filtering
                 let currentUserData = {};
@@ -268,7 +268,7 @@ function Mainpage() {
             };
             
             // Get the server URL from environment or default to localhost
-            const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+            const apiUrl = process.env.REACT_APP_API_URL || 'http://blintr-server.onrender.com';
             
             console.log("Creating match between", userId, "and", match.id);
 

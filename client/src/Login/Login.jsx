@@ -17,7 +17,7 @@ const Login = () => {
         const fetchServerPort = async () => {
             try {
                 // Use a fixed base URL to discover the actual port
-                const response = await fetch('http://localhost:8000/api/server-info');
+                const response = await fetch('http://blintr-server.onrender.com/api/server-info');
                 if (response.ok) {
                     const data = await response.json();
                     setServerPort(data.port);

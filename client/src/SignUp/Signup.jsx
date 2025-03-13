@@ -105,7 +105,7 @@ function Signup() {
             interests: formData.interests.split(',').map(interest => interest.trim())
         };
         try {
-            const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+            const apiUrl = process.env.REACT_APP_API_URL || 'http://blintr-server.onrender.com';
             
             const response = await fetch(`${apiUrl}/api/new_user`, {
                 method: 'POST',
