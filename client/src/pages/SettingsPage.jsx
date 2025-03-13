@@ -53,7 +53,7 @@ function SettingsPage() {
             }
 
             const headers = { 'Authorization': `Bearer ${token}` };
-            const apiUrl = process.env.REACT_APP_API_URL || 'http://blintr-server.onrender.com';
+            const apiUrl = process.env.REACT_APP_API_URL || 'https://blintr-server.onrender.com';
 
             // Fetch user data
             const userRes = await fetch(`${apiUrl}/api/users/${userId}`, { headers });
@@ -174,7 +174,7 @@ function SettingsPage() {
                 'Content-Type': 'application/json'
             };
             
-            const apiUrl = process.env.REACT_APP_API_URL || 'http://blintr-server.onrender.com';
+            const apiUrl = process.env.REACT_APP_API_URL || 'https://blintr-server.onrender.com';
             
             const response = await fetch(`${apiUrl}/api/users/${userId}`, {
                 method: 'PUT',
@@ -265,7 +265,7 @@ function SettingsPage() {
             
             // Use the same API URL configuration as other functions
             // This ensures consistency with other API calls and respects environment variables
-            const apiUrl = process.env.REACT_APP_API_URL || 'http://blintr-server.onrender.com';
+            const apiUrl = process.env.REACT_APP_API_URL || 'https://blintr-server.onrender.com';
             
             console.log("Sending password change request to:", apiUrl);
             

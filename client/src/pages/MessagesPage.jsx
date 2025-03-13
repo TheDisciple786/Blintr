@@ -27,7 +27,7 @@ function MessagesPage() {
                 const headers = { 'Authorization': `Bearer ${token}` };
                 
                 // Get the server URL from environment or default to localhost
-                const apiUrl = process.env.REACT_APP_API_URL || 'http://blintr-server.onrender.com';
+                const apiUrl = process.env.REACT_APP_API_URL || 'https://blintr-server.onrender.com';
                 
                 // Fetch user data, matches, and messages in parallel for efficiency
                 const [userRes, matchRes, msgRes] = await Promise.all([

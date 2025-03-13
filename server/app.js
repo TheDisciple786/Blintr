@@ -11,7 +11,7 @@ connectToMongoDB(config.mongoURI).then(() => console.log("Connected to MongoDB d
 
 // Configure CORS to accept requests from specific origin in production
 app.use(cors({
-    origin: ['http://blintr-client.s3-website.ap-south-1.amazonaws.com', config.clientOrigin],
+    origin: ['http://blintr-client.s3-website.ap-south-1.amazonaws.com', config.clientOrigin, 'https://blintr-client.vercel.app'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));

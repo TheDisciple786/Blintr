@@ -17,7 +17,7 @@ const Login = () => {
         const fetchServerPort = async () => {
             try {
                 // Use a fixed base URL to discover the actual port
-                const response = await fetch('http://blintr-server.onrender.com/api/server-info');
+                const response = await fetch('https://blintr-server.onrender.com/api/server-info');
                 if (response.ok) {
                     const data = await response.json();
                     setServerPort(data.port);
@@ -51,7 +51,7 @@ const Login = () => {
             // Use the discovered port or fall back to environment variable or default
             const port = serverPort || process.env.REACT_APP_API_PORT || 8000;
             const baseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost';
-            const apiUrl = `http://blintr-server.onrender.com`;
+            const apiUrl = `https://blintr-server.onrender.com`;
             
             const response = await fetch(`${apiUrl}/api/users/login`, {
                 method: 'POST',
